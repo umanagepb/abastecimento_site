@@ -102,7 +102,16 @@ O sistema será implantado com 3 serviços:
 └── .env.example                    # Exemplo de variáveis
 ```
 
+## ⚠️ IMPORTANTE: Arquivos Pré-Compilados
+
+Os projetos contêm **arquivos pré-compilados** (.dll), não código fonte. Os Dockerfiles foram otimizados para esta situação.
+
 ## 🛠️ Configurações Importantes
+
+### Arquitetura
+- **Runtime apenas**: Dockerfiles usam arquivos .dll pré-compilados
+- **Sem build**: Não requer compilação durante deploy
+- **Otimizado**: Processo de deploy mais rápido
 
 ### Banco de Dados
 - Utiliza PostgreSQL 15

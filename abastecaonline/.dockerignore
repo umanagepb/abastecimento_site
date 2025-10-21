@@ -1,8 +1,3 @@
-# Build artifacts
-bin/
-obj/
-out/
-
 # VS Code
 .vscode/
 
@@ -12,17 +7,13 @@ out/
 *.userosscache
 *.sln.docstates
 
-# Dependencies
+# Dependencies que não são necessárias
 node_modules/
 packages/
 
 # Logs
 *.log
 logs/
-
-# Runtime files
-*.tmp
-*.temp
 
 # OS generated files
 .DS_Store
@@ -33,7 +24,7 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Docker
+# Docker files
 Dockerfile*
 docker-compose*
 .dockerignore
@@ -49,3 +40,6 @@ README*
 # Test files
 *Tests/
 *Test/
+
+# Build artifacts específicos (manter os DLLs necessários)
+# Não excluir: bin/, obj/, out/ pois contêm os executáveis necessários

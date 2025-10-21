@@ -1,24 +1,12 @@
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-# Copy project files
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy source code
-COPY . ./
-RUN dotnet publish -c Release -o /app/publish --no-restore
-
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime stage - usando arquivos pré-compilados
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Install certificates for SSL
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Install certificates and curl for health checks
+RUN apt-get update && apt-get install -y ca-certificates curl && rm -rf /var/lib/apt/lists/*
 
-# Copy published application
-COPY --from=build /app/publish .
+# Copy all pre-compiled files
+COPY . .
 
 # Create directory for certificates
 RUN mkdir -p /etc/ssl/certs/app
@@ -30,7 +18,7 @@ ENV ASPNETCORE_URLS=http://+:5003
 # Expose port
 EXPOSE 5003
 
-# Create non-root user
+# Create non-root user and set permissions
 RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
 USER appuser
 
