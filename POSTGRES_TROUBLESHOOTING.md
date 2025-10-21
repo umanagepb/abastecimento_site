@@ -1,6 +1,28 @@
 # Guia de Solução de Problemas - PostgreSQL Health Check
 
-## Problema Identificado
+## Problemas Identificados
+
+### 1. PostgreSQL não inicializa - Senha não especificada
+**Erro:** `Database is uninitialized and superuser password is not specified`
+
+**Causa:** A variável de ambiente `DB_PASSWORD` não está definida ou está vazia.
+
+**Solução:**
+1. Crie um arquivo `.env` na raiz do projeto com o conteúdo:
+   ```
+   DB_PASSWORD=postgres
+   JWT_AUDIENCE=https://your-domain.com
+   JWT_SIGNING_KEY=0a660ff6-8609-42b1-ba04-b3babc54a13a
+   API_URL=http://api:5004
+   ```
+
+2. Ou defina a variável antes de executar:
+   ```powershell
+   $env:DB_PASSWORD="postgres"
+   docker-compose up -d
+   ```
+
+### 2. PostgreSQL falhando no health check
 O container PostgreSQL está falhando no health check, impedindo que os outros serviços iniciem.
 
 ## Mudanças Feitas no coolify.yml

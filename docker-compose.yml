@@ -8,6 +8,8 @@ services:
       POSTGRES_DB: abastecimento
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      # Alternative: Use trust method (NOT RECOMMENDED for production)
+      # POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     volumes:
