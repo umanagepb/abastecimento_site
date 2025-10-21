@@ -79,6 +79,42 @@ WEB_DOMAIN=abastecimento.seudominio.com
 - **API Health**: `https://api-abastecimento.seudominio.com/health`
 - **Logs**: Disponíveis no painel do Coolify
 
+## ⚠️ Solução para Problemas de Health Check
+
+Se encontrar erro de container "unhealthy", especialmente com PostgreSQL:
+
+### Problema Comum:
+```
+Container postgres-xxx is unhealthy
+dependency failed to start: container postgres-xxx is unhealthy
+```
+
+### Soluções:
+
+1. **Use o coolify.yml corrigido** (já está na versão atual)
+2. **OU use coolify-alternative.yml** se problemas persistirem
+3. **Verifique variáveis de ambiente** especialmente `DB_PASSWORD`
+
+### Teste Manual:
+```bash
+# Verificar se PostgreSQL está saudável
+docker exec <postgres-container> pg_isready -U postgres -d abastecimento
+
+# Ver logs detalhados
+docker logs <postgres-container> --tail 50
+```
+
+### Configuração Health Check Corrigida:
+```yaml
+postgres:
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U postgres -d abastecimento || exit 1"]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 30s  # IMPORTANTE: Tempo para PostgreSQL inicializar
+```
+
 ## 🛠️ Configuração Alternativa (Sem Docker Compose)
 
 Se preferir configurar serviços individuais:

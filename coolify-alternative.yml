@@ -1,5 +1,5 @@
-# Configuração para deploy no Coolify
-# Este arquivo define os recursos necessários para a aplicação Abastecimento
+# Configuração para deploy no Coolify - Versão sem Health Checks HTTP
+# Use este arquivo se as aplicações não tiverem endpoints /health implementados
 
 # INSTRUÇÕES DE CONFIGURAÇÃO NO COOLIFY:
 # 1. Crie um novo projeto
@@ -57,7 +57,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5004/health || exit 1"]
+      test: ["CMD-SHELL", "netstat -an | grep :5004 | grep LISTEN || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -86,7 +86,7 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5003/health || exit 1"]
+      test: ["CMD-SHELL", "netstat -an | grep :5003 | grep LISTEN || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
