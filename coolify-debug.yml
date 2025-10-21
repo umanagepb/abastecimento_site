@@ -1,18 +1,5 @@
-# Configuração para deploy no Coolify
-# Este arquivo define os recursos necessários para a aplicação Abastecimento
-
-# INSTRUÇÕES DE CONFIGURAÇÃO NO COOLIFY:
-# 1. Crie um novo projeto
-# 2. Adicione este repositório Git
-# 3. Configure as variáveis de ambiente listadas abaixo
-# 4. Execute o deploy
-
-# VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS (Configure no Coolify):
-# DB_PASSWORD=sua_senha_postgres_segura
-# JWT_AUDIENCE=https://seu-dominio.com  
-# JWT_SIGNING_KEY=sua_chave_jwt_secreta_aqui
-# API_DOMAIN=api.seu-dominio.com
-# WEB_DOMAIN=seu-dominio.com
+# Versão de debug do coolify.yml - SEM health checks para debugging
+# Use este arquivo temporariamente para identificar problemas
 
 version: '3.8'
 
@@ -25,21 +12,22 @@ services:
       POSTGRES_DB: abastecimento
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      # Removido POSTGRES_INITDB_ARGS que pode causar problemas
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost -p 5432 || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 15
-      start_period: 60s
+    # Health check desabilitado para debug
+    # healthcheck:
+    #   test: ["CMD-SHELL", "pg_isready -U postgres -h localhost -p 5432 || exit 1"]
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 15
+    #   start_period: 60s
     restart: unless-stopped
     networks:
       - abastecimento
-    # Adicionar configurações de memória compartilhada para PostgreSQL
     shm_size: 256mb
+    ports:
+      - "5432:5432"  # Expor porta para debug
 
   # API Backend
   api:
@@ -57,14 +45,14 @@ services:
     ports:
       - "5004:5004"
     depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5004/health || exit 1"]
-      interval: 30s
-      timeout: 15s
-      retries: 8
-      start_period: 120s
+      - postgres  # Dependência simples, sem health check
+    # Health check desabilitado para debug
+    # healthcheck:
+    #   test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5004/health || exit 1"]
+    #   interval: 30s
+    #   timeout: 15s
+    #   retries: 8
+    #   start_period: 120s
     restart: unless-stopped
     networks:
       - abastecimento
@@ -86,14 +74,14 @@ services:
     ports:
       - "5003:5003"
     depends_on:
-      api:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5003/health || exit 1"]
-      interval: 30s
-      timeout: 15s
-      retries: 8
-      start_period: 150s
+      - api  # Dependência simples, sem health check
+    # Health check desabilitado para debug
+    # healthcheck:
+    #   test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5003/health || exit 1"]
+    #   interval: 30s
+    #   timeout: 15s
+    #   retries: 8
+    #   start_period: 150s
     restart: unless-stopped
     networks:
       - abastecimento
