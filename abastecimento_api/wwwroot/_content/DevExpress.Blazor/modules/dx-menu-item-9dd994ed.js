@@ -1,0 +1,1 @@
+import{D as t}from"./dx-html-element-base-75114249.js";import"./dom-9e6f7067.js";import"./_tslib-158249d5.js";import"./data-qa-utils-8be7c726.js";class e extends t{constructor(){super()}initializeComponent(){super.initializeComponent()}}const o={loadModule:function(){}};export{e as DxMenuItem,o as default};

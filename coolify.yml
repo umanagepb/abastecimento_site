@@ -1,0 +1,79 @@
+# Coolify Configuration for Abastecimento System
+# This file defines the services needed for the Abastecimento application
+
+services:
+  # PostgreSQL Database
+  - name: abastecimento-db
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: abastecimento
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    volumes:
+      - abastecimento_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - abastecimento-network
+
+  # API Service
+  - name: abastecimento-api
+    build:
+      context: ./abastecimento_api
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__ConnectionString: "XpoProvider=Postgres;User ID=postgres;Password=${{ secrets.DB_PASSWORD }};Server=abastecimento-db;Port=5432;Database=abastecimento"
+      Authentication__Jwt__Audience: "${{ secrets.JWT_AUDIENCE }}"
+      Authentication__Jwt__IssuerSigningKey: "${{ secrets.JWT_SIGNING_KEY }}"
+      AllowedHosts: "*"
+    depends_on:
+      - abastecimento-db
+    networks:
+      - abastecimento-network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.type=application"
+      - "coolify.name=abastecimento-api"
+
+  # Web Application (Blazor)
+  - name: abastecimento-web
+    build:
+      context: ./abastecaonline
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__ConnectionString: "XpoProvider=Postgres;User ID=postgres;Password=${{ secrets.DB_PASSWORD }};Server=abastecimento-db;Port=5432;Database=abastecimento"
+      Authentication__Jwt__Audience: "${{ secrets.JWT_AUDIENCE }}"
+      Authentication__Jwt__IssuerSigningKey: "${{ secrets.JWT_SIGNING_KEY }}"
+      ApiUrl: "https://${{ secrets.API_DOMAIN }}"
+      AllowedHosts: "*"
+    depends_on:
+      - abastecimento-api
+    networks:
+      - abastecimento-network
+    labels:
+      - "coolify.managed=true"
+      - "coolify.type=application"
+      - "coolify.name=abastecimento-web"
+      - "traefik.enable=true"
+      - "traefik.http.routers.abastecimento-web.rule=Host(`${{ secrets.WEB_DOMAIN }}`)"
+      - "traefik.http.routers.abastecimento-web.tls=true"
+      - "traefik.http.routers.abastecimento-web.tls.certresolver=letsencrypt"
+
+volumes:
+  abastecimento_db_data:
+
+networks:
+  abastecimento-network:
+    driver: bridge
+
+# Required secrets in Coolify:
+# - DB_PASSWORD: PostgreSQL database password
+# - JWT_AUDIENCE: JWT audience (your domain)
+# - JWT_SIGNING_KEY: JWT signing key for authentication
+# - API_DOMAIN: Domain for the API service
+# - WEB_DOMAIN: Domain for the web application
