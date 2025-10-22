@@ -25,6 +25,11 @@ Este documento descreve as configurações implementadas para permitir acesso ex
 - Política de restart automático
 - Configuração de rede explícita
 
+### 5. **Configurações Coolify**
+- **coolify.yml**: Versão principal com health checks completos
+- **coolify-debug.yml**: Versão para debug sem health checks
+- **coolify-alternative.yml**: Versão alternativa com health checks via netstat
+
 ## 🚀 Como Usar
 
 ### Subir a Aplicação
@@ -168,6 +173,26 @@ Para melhorar ainda mais o acesso externo, considere implementar:
 5. **Monitoramento Avançado** (Prometheus, Grafana)
 6. **Logging Centralizado** (ELK Stack)
 
+## ☁️ Deploy com Coolify
+
+Para deploy em produção usando Coolify:
+
+### Configuração Rápida
+```bash
+# 1. Configure as variáveis no Coolify:
+DB_PASSWORD=sua_senha_postgres_segura
+JWT_AUDIENCE=https://seu-dominio.com
+JWT_SIGNING_KEY=sua_chave_jwt_secreta
+
+# 2. Use o arquivo apropriado:
+# - coolify.yml (produção com health checks)
+# - coolify-debug.yml (debug sem health checks)
+# - coolify-alternative.yml (health checks alternativos)
+```
+
+### Documentação Completa
+Consulte `COOLIFY_EXTERNAL_ACCESS.md` para instruções detalhadas de deploy no Coolify.
+
 ## 📞 Suporte
 
 Em caso de problemas:
@@ -176,7 +201,12 @@ Em caso de problemas:
 3. Verifique as configurações de rede
 4. Teste a conectividade básica com ferramentas como `curl` ou `telnet`
 
+### Para Deploy Coolify:
+- Verifique as variáveis de ambiente no painel
+- Analise os logs dos serviços
+- Confirme a configuração do proxy reverso
+
 ---
 
-**Última atualização:** 21 de Outubro de 2024
-**Versão:** 1.0
+**Última atualização:** 21 de Outubro de 2025
+**Versão:** 1.1

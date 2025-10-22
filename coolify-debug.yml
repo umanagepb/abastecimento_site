@@ -37,10 +37,15 @@ services:
     container_name: abastecimento-api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:5004
+      - ASPNETCORE_URLS=http://0.0.0.0:5004
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=postgres;Port=5432;Database=abastecimento
       - Authentication__Jwt__Audience=${JWT_AUDIENCE}
       - Authentication__Jwt__IssuerSigningKey=${JWT_SIGNING_KEY}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=abastecimento
+      - DB_PASSWORD=${DB_PASSWORD}
       - AllowedHosts=*
     ports:
       - "5004:5004"
@@ -65,11 +70,16 @@ services:
     container_name: abastecimento-web
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:5003
+      - ASPNETCORE_URLS=http://0.0.0.0:5003
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=postgres;Port=5432;Database=abastecimento
       - Authentication__Jwt__Audience=${JWT_AUDIENCE}
       - Authentication__Jwt__IssuerSigningKey=${JWT_SIGNING_KEY}
       - ApiUrl=http://api:5004
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=abastecimento
+      - DB_PASSWORD=${DB_PASSWORD}
       - AllowedHosts=*
     ports:
       - "5003:5003"
