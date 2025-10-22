@@ -1,0 +1,111 @@
+# Configuração Unificada para Coolify (Produção)
+# Contém os serviços: PostgreSQL, API e Web
+
+# VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS (Configure no Coolify):
+# DB_PASSWORD=sua_senha_postgres_segura
+# JWT_AUDIENCE=https://seu-dominio-web.com
+# JWT_SIGNING_KEY=sua_chave_jwt_secreta_super_longa
+# API_DOMAIN=api.seu-dominio.com  # Domínio para a API
+# WEB_DOMAIN=app.seu-dominio.com  # Domínio para a aplicação Web
+
+version: '3.8'
+
+services:
+  # 1. Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: abastecimento
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost -p 5432 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
+    restart: unless-stopped
+    networks:
+      - abastecimento
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=postgres"
+      - "coolify.type=database"
+
+  # 2. API Backend
+  api:
+    build:
+      context: ./abastecimento_api
+      dockerfile: Dockerfile
+    container_name: abastecimento-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:5004
+      - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=postgres;Port=5432;Database=abastecimento
+      - Authentication__Jwt__Audience=${JWT_AUDIENCE}
+      - Authentication__Jwt__IssuerSigningKey=${JWT_SIGNING_KEY}
+      - DataProtection__ApplicationName=AbastecimentoAPI
+    volumes:
+      - dataprotection_keys_api:/home/appuser/.aspnet/DataProtection-Keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - abastecimento
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=abastecimento-api"
+      - "coolify.domain=${API_DOMAIN}"
+      - "coolify.port=5004"
+      - "coolify.https=true"
+      - "coolify.type=application"
+
+  # 3. Aplicação Web Blazor
+  web:
+    build:
+      context: ./abastecaonline
+      dockerfile: Dockerfile
+    container_name: abastecimento-web
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:5003
+      - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=postgres;Port=5432;Database=abastecimento
+      - Authentication__Jwt__Audience=${JWT_AUDIENCE}
+      - Authentication__Jwt__IssuerSigningKey=${JWT_SIGNING_KEY}
+      - ApiUrl=http://abastecimento-api:5004
+      - DataProtection__ApplicationName=AbastecimentoWeb
+    volumes:
+      - dataprotection_keys_web:/home/appuser/.aspnet/DataProtection-Keys
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started # ou service_healthy se a API tiver um healthcheck
+    restart: unless-stopped
+    networks:
+      - abastecimento
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=abastecimento-web"
+      - "coolify.domain=${WEB_DOMAIN}"
+      - "coolify.port=5003"
+      - "coolify.https=true"
+      - "coolify.type=application"
+
+volumes:
+  postgres_data:
+    driver: local
+  dataprotection_keys_api:
+    driver: local
+  dataprotection_keys_web:
+    driver: local
+
+networks:
+  abastecimento:
+    driver: bridge
+    name: abastecimento-network
