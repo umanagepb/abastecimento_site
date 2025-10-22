@@ -35,8 +35,8 @@ echo "SSL libraries configured successfully"
 
 # Wait for database to be ready
 echo "Waiting for database connection..."
-until pg_isready -h ${DB_HOST:-postgres} -p ${DB_PORT:-5432} -U postgres; do
-  echo "Database is unavailable - sleeping"
+until pg_isready -h ${DB_HOST:-abastecimento-db} -p ${DB_PORT:-5432} -U postgres; do
+  echo "Database is unavailable - sleeping - ${DB_HOST:-abastecimento-db}"
   sleep 2
 done
 
