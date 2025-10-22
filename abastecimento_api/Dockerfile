@@ -2,8 +2,14 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Install certificates, PostgreSQL client and curl for health checks
-RUN apt-get update && apt-get install -y ca-certificates postgresql-client curl && rm -rf /var/lib/apt/lists/*
+# Install certificates, PostgreSQL client, graphics libraries for System.Drawing, and curl for health checks
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    postgresql-client \
+    curl \
+    libgdiplus \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy all pre-compiled files
 COPY . .
