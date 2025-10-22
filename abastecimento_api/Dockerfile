@@ -2,20 +2,24 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Install certificates, PostgreSQL client, graphics libraries for System.Drawing, and curl for health checks
+# Install certificates, PostgreSQL client, graphics libraries, SSL libraries, and curl for health checks
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     postgresql-client \
     curl \
+    wget \
     libgdiplus \
     libc6-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libssl3 \
+    openssl \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
 
 # Copy all pre-compiled files
 COPY . .
 
-# Create directory for certificates
-RUN mkdir -p /etc/ssl/certs/app
+# Create directories for certificates and data protection keys
+RUN mkdir -p /etc/ssl/certs/app /app/keys
 
 # Set environment variables for external access
 ENV ASPNETCORE_ENVIRONMENT=Production
@@ -30,11 +34,13 @@ EXPOSE 5004
 RUN chmod +x start.sh
 
 # Create non-root user and set permissions
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+RUN adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser /app && \
+    chown -R appuser /app/keys
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:5004/health || exit 1
+# Health check - mais tolerante para Coolify
+HEALTHCHECK --interval=45s --timeout=30s --start-period=120s --retries=5 \
+  CMD curl -f http://localhost:5004/health || curl -f http://localhost:5004/ || exit 1
 
 ENTRYPOINT ["./start.sh"]
