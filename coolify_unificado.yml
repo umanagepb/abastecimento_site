@@ -51,9 +51,17 @@ services:
       - DataProtection__ApplicationName=AbastecimentoAPI
     volumes:
       - dataprotection_keys_api:/home/appuser/.aspnet/DataProtection-Keys
+      - api_logs:/var/log/api
+      - api_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5004/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
     networks:
       - abastecimento
@@ -103,6 +111,10 @@ volumes:
   dataprotection_keys_api:
     driver: local
   dataprotection_keys_web:
+    driver: local
+  api_logs:
+    driver: local
+  api_data:
     driver: local
 
 networks:
