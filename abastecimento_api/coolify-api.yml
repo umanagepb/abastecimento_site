@@ -40,6 +40,10 @@ services:
       - AllowedHosts=*
       - DataProtection__ApplicationName=AbastecimentoAPI
       
+      # SSL/TLS Configuration
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+      - DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
+      
       # Logging Configuration
       - Logging__LogLevel__Default=Warning
       - Logging__LogLevel__Microsoft=Warning
@@ -58,6 +62,7 @@ services:
     volumes:
       - api_keys:/app/keys
       - api_logs:/app/logs
+      - dataprotection_keys:/home/appuser/.aspnet/DataProtection-Keys
     ports:
       - "5004:5004"
     #healthcheck:
@@ -95,6 +100,10 @@ volumes:
     labels:
       - "coolify.managed=true"
   api_logs:
+    driver: local
+    labels:
+      - "coolify.managed=true"
+  dataprotection_keys:
     driver: local
     labels:
       - "coolify.managed=true"
