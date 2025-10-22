@@ -10,7 +10,7 @@ services:
   # Banco de dados PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: abastecimento-db
+    container_name: postgres
     environment:
       POSTGRES_DB: abastecimento
       POSTGRES_USER: postgres
@@ -60,7 +60,7 @@ services:
       -c max_wal_size=4GB
     labels:
       - "coolify.managed=true"
-      - "coolify.name=abastecimento-postgres"
+      - "coolify.name=postgres"
       - "coolify.type=database"
 
 volumes:
