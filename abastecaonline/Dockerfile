@@ -19,7 +19,6 @@ RUN mkdir -p /etc/ssl/certs/app
 # Set environment variables
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:5003
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 # Expose port
 EXPOSE 5003
