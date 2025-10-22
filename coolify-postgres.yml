@@ -1,0 +1,77 @@
+# Configuração PostgreSQL separada para Coolify
+# Este arquivo configura apenas o banco de dados PostgreSQL
+
+# VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS (Configure no Coolify):
+# DB_PASSWORD=sua_senha_postgres_segura
+
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: abastecimento-db
+    environment:
+      POSTGRES_DB: abastecimento
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      # Configurações otimizadas para PostgreSQL
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Script de inicialização se necessário
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h localhost -p 5432 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
+    restart: unless-stopped
+    networks:
+      - abastecimento
+    shm_size: 256mb
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    # Configurações específicas do PostgreSQL
+    command: |
+      postgres
+      -c shared_preload_libraries=''
+      -c max_connections=100
+      -c shared_buffers=128MB
+      -c effective_cache_size=256MB
+      -c maintenance_work_mem=32MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=4MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=abastecimento-postgres"
+      - "coolify.type=database"
+
+volumes:
+  postgres_data:
+    driver: local
+    labels:
+      - "coolify.managed=true"
+
+networks:
+  abastecimento:
+    driver: bridge
+    name: abastecimento-network
+    labels:
+      - "coolify.managed=true"

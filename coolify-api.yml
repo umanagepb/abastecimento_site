@@ -1,0 +1,107 @@
+# Configuração API separada para Coolify
+# Este arquivo configura apenas o serviço da API
+
+# VARIÁVEIS DE AMBIENTE OBRIGATÓRIAS (Configure no Coolify):
+# DB_PASSWORD=sua_senha_postgres_segura
+# JWT_AUDIENCE=https://seu-dominio.com  
+# JWT_SIGNING_KEY=sua_chave_jwt_secreta_aqui
+# DB_HOST=nome_do_container_postgres (ou IP se externo)
+
+version: '3.8'
+
+services:
+  # API Backend
+  api:
+    build:
+      context: ./abastecimento_api
+      dockerfile: Dockerfile
+    container_name: abastecimento-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://0.0.0.0:5004
+      - ASPNETCORE_HTTP_PORTS=5004
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+      - ASPNETCORE_SHUTDOWNTIMEOUTSECONDS=30
+      
+      # Database Connection
+      - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=${DB_HOST:-postgres};Port=5432;Database=abastecimento;Pooling=true;MinPoolSize=5;MaxPoolSize=20;CommandTimeout=30;
+      
+      # JWT Configuration
+      - Authentication__Jwt__Audience=${JWT_AUDIENCE}
+      - Authentication__Jwt__IssuerSigningKey=${JWT_SIGNING_KEY}
+      - Authentication__Jwt__Issuer=XafSecurity
+      
+      # Database Environment Variables
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=5432
+      - DB_NAME=abastecimento
+      - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      
+      # Application Settings
+      - AllowedHosts=*
+      - DataProtection__ApplicationName=AbastecimentoAPI
+      
+      # Logging Configuration
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft=Warning
+      - Logging__LogLevel__DevExpress.ExpressApp=Information
+      
+      # CORS Configuration
+      - Cors__AllowedOrigins__0=*
+      - Cors__AllowedMethods__0=GET
+      - Cors__AllowedMethods__1=POST
+      - Cors__AllowedMethods__2=PUT
+      - Cors__AllowedMethods__3=DELETE
+      - Cors__AllowedMethods__4=OPTIONS
+      - Cors__AllowedHeaders__0=*
+      - Cors__AllowCredentials=false
+      
+    volumes:
+      - api_keys:/app/keys
+      - api_logs:/app/logs
+    ports:
+      - "5004:5004"
+    healthcheck:
+      test: |
+        curl -f http://localhost:5004/health || 
+        curl -f http://localhost:5004/ || 
+        wget --no-verbose --tries=1 --spider http://localhost:5004/health ||
+        exit 1
+      interval: 30s
+      timeout: 15s
+      retries: 8
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      - abastecimento
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=abastecimento-api"
+      - "coolify.domain=${API_DOMAIN}"
+      - "coolify.port=5004"
+      - "coolify.https=true"
+      - "coolify.type=application"
+
+volumes:
+  api_keys:
+    driver: local
+    labels:
+      - "coolify.managed=true"
+  api_logs:
+    driver: local
+    labels:
+      - "coolify.managed=true"
+
+networks:
+  abastecimento:
+    external: true
+    name: abastecimento-network
