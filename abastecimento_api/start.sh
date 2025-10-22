@@ -34,13 +34,13 @@ export DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=1
 echo "SSL libraries configured successfully"
 
 # Wait for database to be ready
-echo "Waiting for database connection..."
-until pg_isready -h ${DB_HOST:-abastecimento-db} -p ${DB_PORT:-5432} -U postgres; do
-  echo "Database is unavailable - sleeping - ${DB_HOST:-abastecimento-db}"
-  sleep 2
-done
+# echo "Waiting for database connection..."
+# until pg_isready -h ${DB_HOST:-abastecimento-db} -p ${DB_PORT:-5432} -U postgres; do
+#   echo "Database is unavailable - sleeping - ${DB_HOST:-abastecimento-db}"
+#   sleep 2
+# done
 
-echo "Database is ready - starting application"
+# echo "Database is ready - starting application"
 
 # Start the application
 exec dotnet Abastecimento.WebApi.dll
