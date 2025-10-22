@@ -64,4 +64,4 @@ USER appuser
 HEALTHCHECK --interval=45s --timeout=30s --start-period=120s --retries=5 \
   CMD curl -f http://localhost:5004/health || curl -f http://localhost:5004/ || exit 1
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["dotnet", "Abastecimento.WebApi.dll"]
