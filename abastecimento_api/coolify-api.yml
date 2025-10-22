@@ -13,7 +13,7 @@ services:
   # API Backend
   api:
     build:
-      context: ./abastecimento_api
+      context: ./
       dockerfile: Dockerfile
     container_name: abastecimento-api
     environment:
