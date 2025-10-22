@@ -20,8 +20,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://0.0.0.0:5004
       - ASPNETCORE_HTTP_PORTS=5004
-      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
-      - ASPNETCORE_SHUTDOWNTIMEOUTSECONDS=30
       
       # Database Connection
       - ConnectionStrings__ConnectionString=XpoProvider=Postgres;User ID=postgres;Password=${DB_PASSWORD};Server=${DB_HOST:-postgres};Port=5432;Database=abastecimento;Pooling=true;MinPoolSize=5;MaxPoolSize=20;CommandTimeout=30;
@@ -43,9 +41,9 @@ services:
       - DataProtection__ApplicationName=AbastecimentoAPI
       
       # Logging Configuration
-      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Default=Warning
       - Logging__LogLevel__Microsoft=Warning
-      - Logging__LogLevel__DevExpress.ExpressApp=Information
+      - Logging__LogLevel__DevExpress.ExpressApp=Warning
       
       # CORS Configuration
       - Cors__AllowedOrigins__0=*
