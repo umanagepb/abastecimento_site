@@ -40,6 +40,20 @@ if (Test-ContainerRunning $apiContainer) {
         $libsslLogs | ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
     }
     
+    # Verificar se as bibliotecas SSL estão disponíveis no container
+    Write-Host "`nVerificando bibliotecas SSL no container..." -ForegroundColor Yellow
+    try {
+        $sslCheck = docker exec $apiContainer ls -la /usr/lib/x86_64-linux-gnu/libssl* 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "✓ Bibliotecas SSL encontradas no container:" -ForegroundColor Green
+            $sslCheck | ForEach-Object { Write-Host "  $_" -ForegroundColor Cyan }
+        } else {
+            Write-Host "⚠ Erro ao verificar bibliotecas SSL no container" -ForegroundColor Red
+        }
+    } catch {
+        Write-Host "⚠ Não foi possível verificar bibliotecas SSL: $($_.Exception.Message)" -ForegroundColor Red
+    }
+    
     # Verificar se os volumes estão montados
     Write-Host "`nVerificando volumes montados..." -ForegroundColor Yellow
     $volumes = docker inspect $apiContainer | ConvertFrom-Json | Select-Object -ExpandProperty Mounts

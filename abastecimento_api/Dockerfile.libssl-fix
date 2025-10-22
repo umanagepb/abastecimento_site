@@ -1,8 +1,9 @@
+# Dockerfile alternativo com correção completa do libssl
 # Runtime stage - usando arquivos pré-compilados
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy AS base
 WORKDIR /app
 
-# Install certificates, graphics libraries, SSL libraries, and curl for health checks
+# Instalar dependências completas incluindo SSL
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
@@ -15,11 +16,21 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libkrb5-3 \
     zlib1g \
-    && ln -sf /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/libssl.so.1.1 \
-    && ln -sf /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 \
-    && ldconfig \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-ca-certificates
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configurar bibliotecas SSL - solução definitiva para o libssl
+RUN echo "Configurando bibliotecas SSL..." && \
+    # Criar links simbólicos para compatibilidade
+    ln -sf /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/x86_64-linux-gnu/libssl.so.1.1 && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libssl.so.3 /usr/lib/libssl.so.1.1 && \
+    ln -sf /usr/lib/x86_64-linux-gnu/libcrypto.so.3 /usr/lib/libcrypto.so.1.1 && \
+    # Atualizar cache das bibliotecas
+    ldconfig && \
+    # Atualizar certificados
+    update-ca-certificates && \
+    echo "SSL libraries configured successfully"
 
 # Copy all pre-compiled files
 COPY . .
@@ -33,13 +44,14 @@ ENV ASPNETCORE_URLS=http://0.0.0.0:5004
 ENV ASPNETCORE_HTTP_PORTS=5004
 ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 
-# SSL/TLS Configuration
+# SSL/TLS Configuration - configuração otimizada
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=1
 ENV DOTNET_SYSTEM_GLOBALIZATION_USEWEBTABLES=1
 ENV SSL_CERT_DIR=/etc/ssl/certs
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV DOTNET_SYSTEM_NET_HTTP_USEDEFAULTCREDENTIALS=false
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib:$LD_LIBRARY_PATH
 
 # Expose port
 EXPOSE 5004
@@ -53,11 +65,6 @@ RUN adduser --disabled-password --gecos '' appuser && \
     chown -R appuser /app/keys && \
     chown -R appuser /home/appuser/.aspnet/DataProtection-Keys
 
-# Switch to root temporarily to install postgresql-client and fix SSL
-USER root
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
-
-# Switch back to appuser
 USER appuser
 
 # Health check - mais tolerante para Coolify

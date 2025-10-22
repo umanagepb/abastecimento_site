@@ -41,8 +41,13 @@ services:
       - DataProtection__ApplicationName=AbastecimentoAPI
       
       # SSL/TLS Configuration
-      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-      - DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=0
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER=1
+      - DOTNET_SYSTEM_GLOBALIZATION_USEWEBTABLES=1
+      - SSL_CERT_DIR=/etc/ssl/certs
+      - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+      - DOTNET_SYSTEM_NET_HTTP_USEDEFAULTCREDENTIALS=false
+      - LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/lib
       
       # Logging Configuration
       - Logging__LogLevel__Default=Warning
