@@ -99,7 +99,7 @@ services:
     ports:
       - "5003:5003"
     depends_on:
-      api:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5003/health || curl -f http://localhost:5003/ || exit 1"]

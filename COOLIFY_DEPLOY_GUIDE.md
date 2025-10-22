@@ -22,7 +22,7 @@
 ### ✅ 4. Configurações para Coolify
 - **Labels**: Configurados para proxy reverso
 - **Resources**: Limites de memória definidos
-- **Dependencies**: Health checks em cascata
+- **Dependencies**: Web depende apenas do PostgreSQL (API é para integrações externas)
 - **Networks**: Isolamento adequado
 
 ## 🚀 Deploy no Coolify
